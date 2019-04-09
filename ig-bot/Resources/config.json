@@ -1,0 +1,179 @@
+{
+    "orgName": "Ignite UI",
+    "projects": {
+        "masterBacklog": {
+            "name": "Master Backlog",
+            "columns": [
+                "Todo",
+                "Done"
+            ]
+        },
+        "currentSprint": {
+            "name": "19.1 Sprint 31",
+            "columns": [
+                "To do",
+                "In progress",
+                "Done"
+            ]
+        }
+    },
+    "teams": {
+        "PwnJS": {
+            "lead": "bazal4o",
+            "ownership": [
+                "grid row editing",
+                "grid selection",
+                "transaction service",
+                "expansion panel",
+                "combo",
+                "drop down",
+                "autocomplete",
+                "select",
+                "overlay",
+                "navigation drawer",
+                "ng add"
+            ]
+        },
+        "Phoenix": {
+            "lead": "zdrawku",
+            "ownership": [
+                "grid cell component",
+                "grid column group",
+                "grid column component",
+                "grid summary",
+                "grid crud",
+                "grid pagination",
+                "grid sorting",
+                "linear progress bar",
+                "circular progress bar",
+                "dialog",
+                "slider",
+                "toggle",
+                "layout manager",
+                "carousel",
+                "calendar",
+                "date picker"
+            ]
+        },
+        "Grinders": {
+            "lead": "mpavlinov",
+            "ownership": [
+                "grid column pinning",
+                "grid groupby",
+                "grid component",
+                "grid hierarchical",
+                "virtual for",
+                "chip"
+            ]
+        },
+        "Samsara": {
+            "lead": "bkulov",
+            "ownership": [
+                "grid filtering",
+                "grid column resizing",
+                "grid column moving",
+                "button",
+                "button group",
+                "checkbox",
+                "switch",
+                "radio button",
+                "label",
+                "input",
+                "input group",
+                "badge",
+                "icon",
+                "icon",
+                "mask",
+                "ripple",
+                "bottom navigation",
+                "tabs",
+                "avatar",
+                "time picker"
+            ]
+        },
+        "CodeX": {
+            "lead": "gedinakova",
+            "ownership": [
+                "grid column hiding",
+                "grid toolbar",
+                "global search",
+                "list view",
+                "navbar",
+                "card",
+                "snackbar",
+                "toast",
+                "grid exporting",
+                "row filtering",
+                "excel style filtering"
+            ]
+        }
+    },
+    "newIssueLabels": [
+        "status: in-review"
+    ],
+    "newPrLabels": [
+        "status: awaiting-test"
+    ],
+    "allLabels": [
+        "global-search",
+        "grid-toolbar",
+        "grid",
+        "tree-grid",
+        "hierarchical-grid",
+        "list",
+        "combo",
+        "category-chart",
+        "data-chart",
+        "financial-chart",
+        "doughnut-chart",
+        "pie-chart",
+        "excel-library",
+        "bullet-graph",
+        "linear-gauge",
+        "radial-gauge",
+        "dropdown",
+        "select",
+        "autocomplete",
+        "button",
+        "button-group",
+        "checkbox",
+        "switch",
+        "radio-group",
+        "label",
+        "input-group",
+        "input",
+        "mask",
+        "badge",
+        "icon",
+        "progress-bar",
+        "circular-progress",
+        "chip",
+        "virtual-for",
+        "text-highlight",
+        "dialog",
+        "slider",
+        "ripple",
+        "toggle",
+        "tooltip",
+        "overlay",
+        "drag-drop",
+        "navigation-drawer",
+        "navbar",
+        "banner",
+        "snackbar",
+        "toast",
+        "calendar",
+        "date-picker",
+        "month-picker",
+        "time-picker",
+        "excel-exporter",
+        "excel-style-filtering",
+        "selection",
+        "groupby",
+        "column-moving",
+        "column-pinning",
+        "multi-column-headers",
+        "column-resizing",
+        "hiding"
+    ]
+}
