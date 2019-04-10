@@ -7,6 +7,7 @@ import json
 
 from hashlib import sha1
 
+from static import accept_headers
 from settings import load_env_variables
 load_env_variables()
 
@@ -46,12 +47,12 @@ def verify_signature(digest_1, digest_2):
 # end region
 
 
+# authenticate as a GitHub application to access high level API
 async def auth_app():
-    # authenticate as a GitHub application to access high level API
     token = get_jwt_token_bytes().decode()
     uri = "https://api.github.com/app"
     headers = {"Authorization": f"Bearer {token}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.get(uri, params=None, headers=headers)
     # status is OK if the app is authenticated and Not Found if something went wrong
     # return the token and the response body
@@ -59,13 +60,13 @@ async def auth_app():
     return {"jwt": token,  "status": response.reason, "body": response.content.decode()}
 
 
+# find all installations for the authenticated app
 async def find_all_installations():
-    # find all installations for the authenticated app
     gh_app = await auth_app()
     jwt = gh_app["jwt"]
     uri = "https://api.github.com/app/installations"
     headers = {"Authorization": f"Bearer {jwt}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.get(uri, params=None, headers=headers)
     # return the token and the response body
     # the token may be needed for additional authentication
@@ -77,40 +78,40 @@ async def get_single_installation(installation_id):
     jwt = gh_app["jwt"]
     uri = f"https://api.github.com/app/installations/{installation_id}"
     headers = {"Authorization": f"Bearer {jwt}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.get(uri, params=None, headers=headers)
     return {"jwt": jwt, "status": response.reason, "body": response.content.decode()}
 
 
+# find all installations of the app in the particular organization
 async def find_org_installation(org, token):
-    # find all installations of the app in the particular organization
     uri = f"https://api.github.com/orgs{org}/installation"
     headers = {"Authorization": f"Bearer {token}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.get(uri, params=None, headers=headers)
     return {"jwt": token, "status": response.reason, "body": response.content.dcode()}
 
 
+# authenticate as a GitHub Installation to access more advanced API
 async def auth_installation(installation_id):
-    # authenticate as a GitHub Installation to access more advanced API
     # for an application to authenticate as a GitHub Installation, it first must authenticate as a GitHub App
     gh_installation = await get_single_installation(installation_id)
     jwt = gh_installation["jwt"]
     app_body = json.loads(gh_installation["body"])
     uri = app_body["access_tokens_url"]
     headers = {"Authorization": f"Bearer {jwt}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.post(uri, data=None, headers=headers)
     # status is Created if the app was authorized successfully
     # return the installation token that can be used to access more advanced endpoints
     return {"status": response.reason, "body": response.content.decode()}
 
 
+# list all repositories that the current installation has access to
 async def list_repositories(installation_token):
-    # list all repositories that the current installation has access to
     uri = "https://api.github.com/installation/repositories"
     headers = {"Authorization": f"token {installation_token}",
-               "Accept": "application/vnd.github.machine-man-preview+json"}
+               "Accept": accept_headers["machine_man_preview"]}
     response = requests.get(uri, data=None, headers=headers)
     # status is OK if the request passed authentication
     return {"status": response.reason, "body": response.content.decode()}
