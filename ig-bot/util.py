@@ -42,18 +42,29 @@ async def get_installation_info(installation_id):
 
 
 # TODO: Test
-# moves issues that have "in-development" label to "In Progress" if they are in "To do" column of the current sprint
 async def move_issues(app_installations):
+    "moves misplaced issues depending on placed labels"
     for instl in app_installations:
         token = app_installations[instl].get("token", None)
         if (token == None):
             return
-        headers = {"Authorization": f"token {token}",
-                   "Accept": accept_headers["inertia_preview"]}
+        headers = set_headers(token, accept_headers["inertia_preview"])
         all_issues = await get_issues(headers)
+        if len(all_issues) == 0:
+            return
+        # TODO: Add label to move_issue call
         for issue in all_issues:
             if issue_misplaced(issue):
-                await move_issue("In Progress", issue, headers)
+                NotImplemented
+                # await move_issue("In Progress", issue, headers)
+
+
+async def list_repositories(headers):
+    " list all repositories that the current installation has access to"
+    uri = "https://api.github.com/installation/repositories"
+    response = requests.get(uri, data=None, headers=headers)
+    # status is OK if the request passed authentication
+    return {"status": response.reason, "body": response.content.decode()}
 
 
 # search for the team which owns the passed in control
@@ -72,8 +83,8 @@ def clean(text):
     return re.sub(r"((\n|\r)|[- ]+)", "", text)
 
 
-# get the labels that need to be removed
 def digest_body(body):
+    "get the labels that need to be removed"
     body_p = body.split("remove")
     if len(body_p) != 2:
         return []
@@ -102,3 +113,9 @@ def validate_token(token):
     if (type(token) != str):
         raise ValueError(
             f"Expected type 'str' for argument 'token'. Given value is: {token}.")
+
+
+# TODO: include bearers too
+def set_headers(token, accept, *args, **kwargs):
+    return {"Authorization": f"token {token}",
+            "Accept": accept}

@@ -4,18 +4,21 @@ import requests
 
 import util
 
+from settings import get_orgname, get_sprint_name
 from static import accept_headers
-from settings import get_main_proj, get_proj_columns
+from projects import get_org_projects, get_project_columns, get_project_cards
+from settings import get_main_proj, read_project_columns
 
 # template string that is to be replaced with the Issue's or the PR's name or to be removed altogether
-str_tmp = "{/name}"
+name_tmp = "{/name}"
+number_tmp = "{/number}"
 
 
-# add labels to an Issue
 async def add_labels(event_data, headers, labels_to_add, *args, **kwargs):
+    "add labels to an Issue"
     post_labels_url = event_data.get("issue", {}).get("labels_url", None)
     response = requests.post(post_labels_url.replace(
-        str_tmp, ""), json.dumps(labels_to_add), headers=headers)
+        name_tmp, ""), json.dumps(labels_to_add), headers=headers)
     return json.loads(response.content.decode())
 
 
@@ -27,13 +30,13 @@ async def remove_labels(event_data, headers):
     if len(labels_to_remove) == 0:
         return
     lbls_url = event_data.get("issue", {}).get("labels_url", None)
-    issue_labels = await util.get_api_data(lbls_url.replace(str_tmp, ""), headers)
+    issue_labels = await util.get_api_data(lbls_url.replace(name_tmp, ""), headers)
     if len(issue_labels) == 0:
         return
     res = []
     for label in labels_to_remove:
         response = requests.delete(lbls_url.replace(
-            str_tmp, f"/{label}"), headers=headers)
+            name_tmp, f"/{label}"), headers=headers)
         res.append(json.loads(response.content.decode()))
     return res
 
@@ -45,25 +48,32 @@ async def add_to_org_project(event_data, headers):
     issue_id = event_data.get("issue", {}).get("id", None)
     if org_name == None or issue_id == None:
         return
-    org_projects_url = f"https://api.github.com/orgs/{org_name}/projects"
-    # a list of all projects in the organization
-    projects = await util.get_api_data(org_projects_url, headers)
-    config_json = json.loads(open("resources/config.json", "r").read())
-    proj_name = get_main_proj(config_json)
-    tgt_project = next(
-        iter((pr for pr in projects if pr.get("name", None) == proj_name)), None)
-    proj_columns_url = tgt_project.get("columns_url", None)
-    if proj_columns_url == None:
-        return
-    proj_columns = await util.get_api_data(proj_columns_url, headers)
-    columns = get_proj_columns(config_json, proj_name)
-    tgt_column = next(
-        iter((col for col in proj_columns if col.get("name", None) == columns[0])), None)
+    proj_name = get_main_proj()
+    proj_id = await get_proj_id(proj_name, org_name, headers)
+    columns_config = read_project_columns(proj_name)
+    todo_col = columns_config[0]
+    tgt_column = await get_target_column(proj_id, proj_name, todo_col, headers)
     # content_id and content_type must be specified - Issue or PR
     data = {"content_id": issue_id, "content_type": "Issue"}
-    col_url = tgt_column.get("cards_url")
-    response = requests.post(col_url, data=json.dumps(data), headers=headers)
+    cards_url = tgt_column.get("cards_url")
+    response = requests.post(cards_url, data=json.dumps(data), headers=headers)
     return json.loads(response.content.decode())
+
+
+async def get_target_column(proj_id, proj_name, column_name, headers):
+    proj_columns = await get_project_columns(proj_id, headers)
+    tgt_column = next(
+        iter((col for col in proj_columns if col.get("name").lower() == column_name.lower())), None)
+    return tgt_column
+
+
+async def get_proj_id(proj_name, org_name, headers):
+    # a list of all projects in the organization
+    projects = await get_org_projects(org_name, headers)
+    tgt_project = next(
+        iter((pr for pr in projects if pr.get("name", None) == proj_name)), None)
+    proj_id = tgt_project.get("id", None)
+    return proj_id
 
 
 # TODO: Test
@@ -93,30 +103,42 @@ async def add_control_label(event_data, headers, control_name):
     return await add_labels(event_data, headers, labels_to_add)
 
 
-# recursively search for a label that matches the control_name parameter
 async def match_label(labels_url, control_name, headers, page=1):
+    "recursively search for a label that matches the control_name parameter"
     page_number = re.search(r"page=(\d+)?", labels_url).group(1)
     url = labels_url.replace(page_number, str(page))
     labels = await util.get_api_data(url, headers)
     for label in labels:
-        # TODO: find a good way to unify the text from the input and the label name
+        # TODO: find a good way to unify the text from the input and the label name (NLP?)
         if util.clean(label["name"]) == util.clean(control_name):
             return label
         # if we are at the last label on the page and no match is found, request the next page of labels
         if labels.index(label) == len(labels) - 1:
-            match = await match_label(url, control_name, page + 1)
+            match = await match_label(url, control_name, headers, page + 1)
             return match
     return None
 
 
-# TODO
-async def move_issue(to_column, issue, headers):
-    NotImplemented
-
-
-# TODO
 async def get_issues(headers):
-    NotImplemented
+    "get all issues for all repos that the installation has access to"
+    all_issues = []
+    all_repos = util.list_repositories(headers)
+    for repo in all_repos:
+        issues_url = repo.get("issues_url", None).replace(number_tmp, "")
+        response = requests.get(issues_url, headers=headers)
+        # Github returns an array of issues per repository
+        repo_issues = json.loads(response.content.decode())
+        for issue in repo_issues:
+            all_issues.append(issue)
+    return all_issues
+
+
+async def move_issue(to_column, issue_card, col_id, headers):
+    card_id = issue_card.get("id", None)
+    data = {"position": "top", "column_id": col_id}
+    uri = f"https://api.github.com/projects/columns/cards/{card_id}/moves"
+    response = requests.post(uri, data=json.dumps(data), headers=headers)
+    return json.loads(response.content.decode())
 
 
 # TODO

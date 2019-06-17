@@ -1,12 +1,11 @@
 import os
 import hmac
-import time
 import jwt
-import requests
+import time
 import json
+import requests
 
 from hashlib import sha1
-
 from static import accept_headers
 from settings import load_env_variables
 load_env_variables()
@@ -104,14 +103,4 @@ async def auth_installation(installation_id):
     response = requests.post(uri, data=None, headers=headers)
     # status is Created if the app was authorized successfully
     # return the installation token that can be used to access more advanced endpoints
-    return {"status": response.reason, "body": response.content.decode()}
-
-
-# list all repositories that the current installation has access to
-async def list_repositories(installation_token):
-    uri = "https://api.github.com/installation/repositories"
-    headers = {"Authorization": f"token {installation_token}",
-               "Accept": accept_headers["machine_man_preview"]}
-    response = requests.get(uri, data=None, headers=headers)
-    # status is OK if the request passed authentication
     return {"status": response.reason, "body": response.content.decode()}

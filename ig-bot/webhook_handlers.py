@@ -3,8 +3,10 @@ import requests
 
 import util
 import issues
+from project_cards import try_move_card
 import projects as proj
 import pull_requests as pr
+
 
 # handler functions for webhook events
 # payload = event.data
@@ -18,7 +20,8 @@ async def created_project(event, headers):
 
 # region Issues:
 async def labeled_issue(event, headers):
-    print("someone labeled your issue, boi")
+    # print(event.data)
+    await try_move_card(event.data, headers)
 
 
 async def unlabeled_issue(event, headers):

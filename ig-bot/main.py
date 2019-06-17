@@ -11,7 +11,8 @@ from gidgethub import aiohttp as gh_aiohttp
 from datetime import datetime, timedelta
 
 from static import accept_headers
-from settings import load_env_variables, ParallelScheduler
+from settings import load_env_variables
+from parallel_scheduler import ParallelScheduler
 
 import util
 import webhook_handlers as wh
@@ -30,46 +31,40 @@ port = os.environ.get("PORT")
 
 # region: events
 # listen for events raised by the router
-@router.register("project", action="created")
+@router.register("project", action="project")
 async def project_created(event, token, *args, **kwargs):
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["inertia_preview"]}
+    headers = util.set_headers(token, accept_headers["inertia_preview"])
     await wh.created_project(event, headers)
 
 
 @router.register("issues", action="labeled")
 async def labeled_issue_evt(event, token, *args, **kwargs):
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["machine_man_preview"]}
+    headers = util.set_headers(token, accept_headers["inertia_preview"])
     await wh.labeled_issue(event, headers)
 
 
 @router.register("issues", action="unlabeled")
 async def unlabeled_issue_evt(event, token, *args, **kwargs):
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["machine_man_preview"]}
+    headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.unlabeled_issue(event, headers)
 
 
 @router.register("issues", action="opened")
 async def opened_issue_evt(event, token, *args, **kwargs):
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["machine_man_preview"]}
+    headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.opened_issue(event, headers)
 
 
 @router.register("issue_comment", action="created")
 async def posted_comment_issue_evt(event, token, *args, **kwargs):
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["machine_man_preview"]}
+    headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.posted_comment_issue(event, headers)
 
 
 @router.register("pull_request", action="opened")
 async def opened_pr_evt(event, token, *args, **kwargs):
     # since GitHub's PRs are also Issues the Accept header remains the same
-    headers = {"Authorization": f"token {token}",
-               "Accept": accept_headers["machine_man_preview"]}
+    headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.opened_pr(event, headers)
 # end region
 
@@ -96,6 +91,7 @@ async def main(request):
         app_installations[target_instl_id] = await util.get_installation_info(target_instl_id)
     # get the installation's token
     token = app_installations[target_instl_id].get("token", None)
+    print(token)
     # dispatch an event that contains the payload
     await router.dispatch(event, token=token)
     return web.Response(status=200)

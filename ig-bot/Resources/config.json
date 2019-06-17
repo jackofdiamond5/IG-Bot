@@ -1,5 +1,5 @@
 {
-    "orgName": "Ignite UI",
+    "orgName": "myawesomeorganization",
     "projects": {
         "masterBacklog": {
             "name": "Master Backlog",
@@ -9,7 +9,7 @@
             ]
         },
         "currentSprint": {
-            "name": "19.1 Sprint 32",
+            "name": "Current Sprint",
             "columns": [
                 "To do",
                 "In progress",
@@ -19,7 +19,7 @@
     },
     "teams": {
         "PwnJS": {
-            "lead": "bazal4o",
+            "lead": "lipata",
             "ownership": [
                 "grid row editing",
                 "grid selection",
@@ -31,7 +31,8 @@
                 "select",
                 "overlay",
                 "navigation drawer",
-                "ng add"
+                "ng add",
+                "row drag"
             ]
         },
         "Phoenix": {
