@@ -10,11 +10,11 @@ from projects import get_org_projects, get_project_columns, get_project_cards
 async def try_move_card(event_data, headers):
     "attempt to move the issue that was labeled to an appropriate column"
     label_name = event_data.get("label", {}).get("name", None)
-    if label_name == "in-review":
+    if label_name == "status: in-review":
         await move_to("To do", event_data, headers)
-    elif label_name == "in-development":
+    elif label_name == "status: in-development":
         await move_to("In Progress", event_data, headers)
-    elif label_name == "resolved":
+    elif label_name == "status: resolved":
         await move_to("Done", event_data, headers)
 
 
@@ -25,6 +25,8 @@ async def move_to(target_col, event_data, headers):
     issue_id = event_data.get("issue").get("id")
     proj_id = await get_proj_id(cur_sprint, org_name, headers)
     cur_col = await get_current_col(proj_id, headers, issue_id)
+    if cur_col is None:
+        return
     cur_col_data = await get_col_data(cur_col.get("name"), proj_id, cur_sprint, headers)
     tgt_col_data = await get_col_data(target_col, proj_id, cur_sprint, headers)
     issue_card = await get_target_card(cur_col_data, event_data, headers)

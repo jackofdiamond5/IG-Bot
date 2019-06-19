@@ -30,7 +30,7 @@ async def unlabeled_issue(event, headers):
 
 async def opened_issue(event, headers):
     config = json.loads(open("Resources/config.json").read())
-    issue_labels = json.dumps({"labels": config.get("newIssueLabels", None)})
+    issue_labels = {"labels": config.get("newIssueLabels", None)}
     await issues.add_labels(event.data, headers, labels_to_add=issue_labels)
     await issues.add_to_org_project(event.data, headers)
 
