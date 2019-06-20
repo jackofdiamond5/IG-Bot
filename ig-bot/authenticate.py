@@ -1,6 +1,6 @@
 import os
-import hmac
 import jwt
+import hmac
 import time
 import json
 import requests
@@ -9,7 +9,6 @@ from hashlib import sha1
 from static import accept_headers
 from settings import load_env_variables
 load_env_variables()
-
 
 def generate_jwt_payload():
     gh_app_id = os.getenv("GITHUB_APP_IDENTIFIER")
