@@ -4,10 +4,10 @@ import schedule
 import requests
 import dateutil.parser as dp
 
+import issues
 from datetime import datetime
 from static import accept_headers
 from settings import get_sprint_columns
-from issues import issue_misplaced, move_issue, get_issues
 
 import authenticate as auth
 
@@ -44,18 +44,22 @@ async def get_installation_info(installation_id):
 # TODO: Test
 async def move_issues(app_installations):
     "moves misplaced issues depending on placed labels"
+    print("moving issues")
     for instl in app_installations:
+        print(instl)
         token = app_installations[instl].get("token", None)
         if (token == None):
             return
-        headers = set_headers(token, accept_headers["inertia_preview"])
-        all_issues = await get_issues(headers)
-        if len(all_issues) == 0:
+        headers = set_headers(token, accept_headers["machine_man_preview"])
+        all_issues = await issues.get_issues(headers)
+        if all_issues is None or len(all_issues) == 0:
             return
         # TODO: Add label to move_issue call
         for issue in all_issues:
-            if issue_misplaced(issue):
-                NotImplemented
+            print(issue)
+            print(await issues.issue_misplaced(issue, headers))
+            # if await issues.issue_misplaced(issue, headers):
+            #     NotImplemented
                 # await move_issue("In Progress", issue, headers)
 
 
@@ -64,7 +68,7 @@ async def list_repositories(headers):
     uri = "https://api.github.com/installation/repositories"
     response = requests.get(uri, data=None, headers=headers)
     # status is OK if the request passed authentication
-    return {"status": response.reason, "body": response.content.decode()}
+    return {"status": response.reason, "body": json.loads(response.content.decode())}
 
 
 # search for the team which owns the passed in control

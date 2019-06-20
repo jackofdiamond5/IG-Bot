@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import time
+import asyncio
 import dateutil.parser as dp
 
 from aiohttp import web
@@ -17,6 +18,7 @@ from parallel_scheduler import ParallelScheduler
 import util
 import webhook_handlers as wh
 
+
 # collection to store all authenticated tokens
 # each token is associated with an installation
 # { <installation_id>: { token: "", expires_at: "" } }
@@ -27,6 +29,9 @@ router = routing.Router()
 # get all environment variables
 load_env_variables()
 port = os.environ.get("PORT")
+
+
+# loop = asyncio.get_event_loop()
 
 
 # region: events
@@ -51,7 +56,7 @@ async def unlabeled_issue_evt(event, token, *args, **kwargs):
 
 @router.register("issues", action="opened")
 async def opened_issue_evt(event, token, *args, **kwargs):
-    headers = util.set_headers(token, accept_headers["machine_man_preview"])
+    headers = util.set_headers(token, accept_headers["symmetra_preview"])
     await wh.opened_issue(event, headers)
 
 
@@ -98,12 +103,18 @@ async def main(request):
 
 
 async def job():
+    print("doing job")
     await util.update_installations(app_installations)
     await util.move_issues(app_installations)
 
 
+def job_runner():
+    asyncio.run(job())
+
+
 scheduler = ParallelScheduler()
-scheduler.every().day.at("20:00").do(job)
+# scheduler.every(10).seconds.do(job_runner)
+scheduler.every().day.at("10:09").do(job_runner)
 scheduler.run_continuously()
 
 if __name__ == "__main__":

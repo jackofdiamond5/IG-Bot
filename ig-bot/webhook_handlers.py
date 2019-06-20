@@ -3,10 +3,10 @@ import requests
 
 import util
 import issues
-from project_cards import try_move_card
 import projects as proj
 import pull_requests as pr
 
+from project_cards import try_move_card
 
 # handler functions for webhook events
 # payload = event.data

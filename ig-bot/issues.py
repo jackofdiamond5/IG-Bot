@@ -1,13 +1,13 @@
 import re
 import json
+import static
 import requests
 
 import util
+import projects as proj
+import settings
 
-from settings import get_orgname, get_sprint_name
-from static import accept_headers
-from projects import get_org_projects, get_project_columns, get_project_cards
-from settings import get_main_proj, read_project_columns
+from project_cards import get_current_col
 
 # template string that is to be replaced with the Issue's or the PR's name or to be removed altogether
 name_tmp = "{/name}"
@@ -43,14 +43,14 @@ async def remove_labels(event_data, headers):
 
 async def add_to_org_project(event_data, headers):
     # GitHub requires a different Accept header for this endpoint
-    headers["Accept"] = accept_headers["inertia_preview"]
+    headers["Accept"] = static.accept_headers["inertia_preview"]
     org_name = event_data.get("organization", {}).get("login", None)
     issue_id = event_data.get("issue", {}).get("id", None)
     if org_name == None or issue_id == None:
         return
-    proj_name = get_main_proj()
+    proj_name = settings.get_main_proj()
     proj_id = await get_proj_id(proj_name, org_name, headers)
-    columns_config = read_project_columns(proj_name)
+    columns_config = settings.read_project_columns(proj_name)
     todo_col = columns_config[0]
     tgt_column = await get_target_column(proj_id, proj_name, todo_col, headers)
     # content_id and content_type must be specified - Issue or PR
@@ -61,7 +61,7 @@ async def add_to_org_project(event_data, headers):
 
 
 async def get_target_column(proj_id, proj_name, column_name, headers):
-    proj_columns = await get_project_columns(proj_id, headers)
+    proj_columns = await proj.get_project_columns(proj_id, headers)
     tgt_column = next(
         iter((col for col in proj_columns if col.get("name").lower() == column_name.lower())), None)
     return tgt_column
@@ -69,7 +69,7 @@ async def get_target_column(proj_id, proj_name, column_name, headers):
 
 async def get_proj_id(proj_name, org_name, headers):
     # a list of all projects in the organization
-    projects = await get_org_projects(org_name, headers)
+    projects = await proj.get_org_projects(org_name, headers)
     tgt_project = next(
         iter((pr for pr in projects if pr.get("name", None) == proj_name)), None)
     proj_id = tgt_project.get("id", None)
@@ -85,7 +85,7 @@ async def assign_teamlead(event_data, headers):
     team = util.get_team_ownership(target_control)
     teamlead_login = team.get("lead", None)
     url = f"{event_data.get('url', None)}/assignees"
-    headers["Accept"] = accept_headers["symmetra_preview"]
+    headers["Accept"] = static.accept_headers["symmetra_preview"]
     response = requests.post(url, {"assignees": [teamlead_login]}, headers)
     return json.loads(response.content.decode())
 
@@ -122,7 +122,10 @@ async def match_label(labels_url, control_name, headers, page=1):
 async def get_issues(headers):
     "get all issues for all repos that the installation has access to"
     all_issues = []
-    all_repos = util.list_repositories(headers)
+    response = await util.list_repositories(headers)
+    all_repos = response.get("body").get("repositories")
+    if all_repos is None or len(all_repos) == 0:
+        return
     for repo in all_repos:
         issues_url = repo.get("issues_url", None).replace(number_tmp, "")
         response = requests.get(issues_url, headers=headers)
@@ -142,8 +145,30 @@ async def move_issue(to_column, issue_card, col_id, headers):
 
 
 # TODO
-async def issue_misplaced(issue):
-    NotImplemented
+async def issue_misplaced(issue, headers):
+    headers["Accept"] = static.accept_headers["inertia_preview"]
+    org_name = settings.get_orgname()
+    cur_sprint = settings.get_sprint_name()
+    proj_id = await get_proj_id(cur_sprint, org_name, headers)
+    # if the project id is missing then this issue is not in the current sprint project
+    if proj_id is None:
+        return False
+    issue_id = issue.get("id")
+    current_col = await get_current_col(proj_id, headers, issue_id)
+    if current_col is None:
+        return False
+    cur_col_name = current_col.get("name")
+    issue_labels = issue.get("labels")
+    label_names = []
+    for label in issue_labels:
+        label_names.append(label.get("name"))
+    if cur_col_name == static.sprint_todo_col and static.in_review_lbl in label_names:
+        return False
+    elif cur_col_name == static.in_progress_col and static.in_dev_lbl in label_names:
+        return False
+    elif cur_col_name == static.done_col and static.resolved_lbl in label_names:
+        return False
+    return True
 
 
 # get the control that is referenced in the issue's body (if any)
