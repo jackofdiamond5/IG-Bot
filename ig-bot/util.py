@@ -98,7 +98,10 @@ def validate_token(token):
             f"Expected type 'str' for argument 'token'. Given value is: {token}.")
 
 
-# TODO: include bearers too
-def set_headers(token, accept, *args, **kwargs):
+def set_headers(token, accept, bearer=False, *args, **kwargs):
+    "set the headers for an authorize request to Github"
+    if bearer:
+        return {"Authorization": f"Bearer {token}",
+                "Accept": accept}
     return {"Authorization": f"token {token}",
             "Accept": accept}

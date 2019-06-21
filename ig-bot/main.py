@@ -31,9 +31,6 @@ load_env_variables()
 port = os.environ.get("PORT")
 
 
-# loop = asyncio.get_event_loop()
-
-
 # region: events
 # listen for events raised by the router
 @router.register("project", action="project")
@@ -71,6 +68,7 @@ async def opened_pr_evt(event, token, *args, **kwargs):
     # since GitHub's PRs are also Issues the Accept header remains the same
     headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.opened_pr(event, headers)
+
 
 @router.register("pull_request", action="ready_for_review")
 async def pr_ready_for_review(event, token, *args, **kwargs):
