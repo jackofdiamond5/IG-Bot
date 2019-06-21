@@ -144,7 +144,6 @@ async def move_issue(to_column, issue_card, col_id, headers):
     return json.loads(response.content.decode())
 
 
-# TODO
 async def issue_misplaced(issue, headers):
     headers["Accept"] = static.accept_headers["inertia_preview"]
     org_name = settings.get_orgname()
@@ -171,8 +170,8 @@ async def issue_misplaced(issue, headers):
     return True
 
 
-# get the control that is referenced in the issue's body (if any)
 def match_control(issue_body):
+    "get the control that is referenced in the issue's body (if any)"
     pattern = r"control: \w+(((-|\s)\w+){0,})(\r|\n)"
     # case insensitve search
     match = re.search(pattern, issue_body, re.I).group()

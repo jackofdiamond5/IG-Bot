@@ -5,11 +5,12 @@ import requests
 import dateutil.parser as dp
 
 import issues
+import project_cards as pc
+import authenticate as auth
+
 from datetime import datetime
 from static import accept_headers
 from settings import get_sprint_columns
-
-import authenticate as auth
 
 
 async def get_api_data(uri, headers):
@@ -39,28 +40,6 @@ async def get_installation_info(installation_id):
     auth_res = await auth.auth_installation(installation_id)
     res_body = json.loads(auth_res.get("body", {}))
     return res_body
-
-
-# TODO: Test
-async def move_issues(app_installations):
-    "moves misplaced issues depending on placed labels"
-    print("moving issues")
-    for instl in app_installations:
-        print(instl)
-        token = app_installations[instl].get("token", None)
-        if (token == None):
-            return
-        headers = set_headers(token, accept_headers["machine_man_preview"])
-        all_issues = await issues.get_issues(headers)
-        if all_issues is None or len(all_issues) == 0:
-            return
-        # TODO: Add label to move_issue call
-        for issue in all_issues:
-            print(issue)
-            print(await issues.issue_misplaced(issue, headers))
-            # if await issues.issue_misplaced(issue, headers):
-            #     NotImplemented
-                # await move_issue("In Progress", issue, headers)
 
 
 async def list_repositories(headers):
