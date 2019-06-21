@@ -71,6 +71,12 @@ async def opened_pr_evt(event, token, *args, **kwargs):
     # since GitHub's PRs are also Issues the Accept header remains the same
     headers = util.set_headers(token, accept_headers["machine_man_preview"])
     await wh.opened_pr(event, headers)
+
+@router.register("pull_request", action="ready_for_review")
+async def pr_ready_for_review(event, token, *args, **kwargs):
+    headers = util.set_headers(token, accept_headers["machine_man_preview"])
+    await wh.pr_set_to_ready(event, headers)
+    NotImplemented
 # end region
 
 
@@ -103,9 +109,7 @@ async def main(request):
 
 
 async def job():
-    print("doing job")
-    await util.update_installations(app_installations)
-    await util.move_issues(app_installations)
+    NotImplemented
 
 
 def job_runner():
@@ -113,8 +117,7 @@ def job_runner():
 
 
 scheduler = ParallelScheduler()
-# scheduler.every(10).seconds.do(job_runner)
-scheduler.every().day.at("10:09").do(job_runner)
+scheduler.every().friday.at("22:00").do(job_runner)
 scheduler.run_continuously()
 
 if __name__ == "__main__":

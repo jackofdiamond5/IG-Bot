@@ -43,4 +43,7 @@ async def posted_comment_issue(event, headers):
 # region PRs:
 async def opened_pr(event, headers):
     await pr.add_labels(event.data, headers)
+
+async def pr_set_to_ready(event, headers):
+    await pr.add_labels(event.data, headers)
 # end region

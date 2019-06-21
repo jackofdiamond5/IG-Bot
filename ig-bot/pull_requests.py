@@ -8,8 +8,11 @@ from issues import add_labels as add_labels_to_pr
 
 
 async def add_labels(event_data, headers):
+    # if it is a draft PR - do not add any labels
+    if event_data.get("pull_request").get("draft"):
+        return
     config = json.loads(open("Resources/config.json").read())
-    labels_to_add = json.dumps({"labels": config.get("newPrLabels", None)})
+    labels_to_add = {"labels": config.get("newPrLabels", None)}
     if (not is_pr(event_data)):
         return
     issue_url = event_data.get("pull_request", {}).get("issue_url", None)
