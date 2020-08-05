@@ -1,68 +1,50 @@
 import re
 import json
-import schedule
 import requests
 import dateutil.parser as dp
-
-import issues
-import project_cards as pc
 import authenticate as auth
 
 from datetime import datetime
-from static import accept_headers
-from settings import get_sprint_columns
 
 
 async def get_api_data(uri, headers):
-    # authorized get request
+    "authorized get request"
     response = requests.get(uri, headers=headers)
     return json.loads(response.content.decode())
 
 
-# get all app installations
 async def update_installations(app_intallations):
+    "get all app installations"
     response = await auth.find_all_installations()
     res_body = json.loads(response.get("body", None))
     await update_tokens(res_body, app_intallations)
 
 
-# update the tokens for all installations
 async def update_tokens(installations, app_intallations):
+    "update the tokens for all installations"
     for installation in installations:
         installation_id = installation.get("id", None)
-        app_intallations[installation_id] = await get_installation_info(
-            installation_id)
+        app_intallations[installation_id] = await get_installation_info(installation_id)
     return app_intallations
 
 
-# get updated data for an installation
 async def get_installation_info(installation_id):
+    "get updated data for an installation"
     auth_res = await auth.auth_installation(installation_id)
     res_body = json.loads(auth_res.get("body", {}))
     return res_body
 
 
 async def list_repositories(headers):
-    " list all repositories that the current installation has access to"
+    "list all repositories that the current installation has access to"
     uri = "https://api.github.com/installation/repositories"
     response = requests.get(uri, data=None, headers=headers)
     # status is OK if the request passed authentication
     return {"status": response.reason, "body": json.loads(response.content.decode())}
 
 
-# search for the team which owns the passed in control
-def get_team_ownership(control_name):
-    config_json = json.loads(open("config.json", "r").read())
-    teams = config_json.get("teams", {})
-    for team in teams:
-        team_ownership = teams[team].get("ownership", [])
-        if control_name in team_ownership:
-            return teams[team]
-    return None
-
-
-# strip the match of new lines, spaces, and dashes
 def clean(text):
+    "strip the match of new lines, spaces, and dashes"
     return re.sub(r"((\n|\r)|[- ]+)", "", text)
 
 
@@ -78,8 +60,7 @@ def digest_body(body):
         return []
     args = body_p[1]
     selected_labels = []
-    # args.Split(',').Select(arg => arg.Trim()).ToList()
-    for label in list(arg.strip() for arg in args.split(',')):
+    for label in list(arg.strip() for arg in args.split(",")):
         selected_labels.append(label)
     return selected_labels
 
@@ -92,16 +73,19 @@ def token_expired(target_instl_id, app_intallations):
     return parsed <= datetime.now()
 
 
-def validate_token(token):
-    if (type(token) != str):
-        raise ValueError(
-            f"Expected type 'str' for argument 'token'. Given value is: {token}.")
-
-
-def set_headers(token, accept, bearer=False, *args, **kwargs):
-    "set the headers for an authorize request to Github"
+def set_headers(token, accept=None, bearer=False):
+    "set the headers for an authorized request to Github"
     if bearer:
-        return {"Authorization": f"Bearer {token}",
-                "Accept": accept}
-    return {"Authorization": f"token {token}",
-            "Accept": accept}
+        return {"Authorization": f"Bearer {token}", "Accept": accept}
+    return {"Authorization": f"token {token}", "Accept": accept}
+
+
+def build_payload(schema, variables):
+    newLine = "\n"
+    return (
+        '{"query":'
+        + f'"{schema.replace(newLine, "")}",'
+        + '"variables":'
+        + variables.replace(newLine, "")
+        + "}"
+    )

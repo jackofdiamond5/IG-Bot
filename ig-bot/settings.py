@@ -34,9 +34,6 @@ def read_project_columns(proj_name):
     for p_type in proj_types:
         name = projects.get(p_type, {}).get("name", None)
         if name == proj_name:
-            # the first column should be "To do"
-            # the second column should be "In progress"
-            # the third column should be "Done"
             return projects.get(p_type, {}).get("columns", [])
 
 

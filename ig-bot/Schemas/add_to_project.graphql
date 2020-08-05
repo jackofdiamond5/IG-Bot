@@ -1,0 +1,7 @@
+mutation AddIssueToProject($issue_id: ID!, $project_ids: [ID!]) {
+    updateIssue(input:{id: $issue_id, projectIds: $project_ids}) {
+        issue {
+            id
+        }
+     }
+}

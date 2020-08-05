@@ -18,7 +18,7 @@ async def add_labels(event_data, headers):
     issue_url = event_data.get("pull_request", {}).get("issue_url", None)
     # treat this PR as an Issue
     pr_issue = await get_pr_issue(issue_url, headers)
-    return await add_labels_to_pr({"issue": pr_issue}, headers, labels_to_add=labels_to_add)
+    return await add_labels_to_pr({"issue": pr_issue}, headers, labels_to_add)
 
 
 # get the issue equivalent of the PR - for GitHub each PR is also an issue

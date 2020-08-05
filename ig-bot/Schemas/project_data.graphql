@@ -1,0 +1,17 @@
+query GetProjectData($projectName: String!, $login: String!) {
+  organization(login: $login) {
+    projects(search: $projectName, first: 1) {
+      nodes {
+        name
+        id
+        columns(first: 10) {
+          nodes {
+            name
+            id
+            url
+          }
+        }
+      }
+    }
+  }
+}

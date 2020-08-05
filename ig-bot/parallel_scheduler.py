@@ -26,3 +26,18 @@ class ParallelScheduler(Scheduler):
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         return stop_continuous_running
+
+
+# TODO tasks scheduler
+
+# async def job():
+#     NotImplemented
+
+
+# def job_runner():
+#     asyncio.run(job())
+
+
+# scheduler = ParallelScheduler()
+# scheduler.every().friday.at("22:00").do(job_runner)
+# scheduler.run_continuously()

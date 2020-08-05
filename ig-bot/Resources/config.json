@@ -1,111 +1,28 @@
 {
-    "orgName": "Ignite UI",
+    "orgName": "myawesomeorganization",
     "projects": {
         "masterBacklog": {
             "name": "Master Backlog",
             "columns": [
-                "Todo",
-                "Done"
+                "Queue",
+                "Discovery",
+                "Design",
+                "Ready",
+                "Next Sprint Draft",
+                "Next Milestone Draft",
+                "Ice Box"
             ]
         },
-        "currentSprint": {
-            "name": "Current Sprint",
+        "featuresTriage": {
+            "name": "Features Triage",
             "columns": [
-                "To do",
-                "In progress",
-                "Done"
-            ]
-        }
-    },
-    "teams": {
-        "PwnJS": {
-            "lead": "lipata",
-            "ownership": [
-                "grid row editing",
-                "grid selection",
-                "transaction service",
-                "expansion panel",
-                "combo",
-                "drop down",
-                "autocomplete",
-                "select",
-                "overlay",
-                "navigation drawer",
-                "ng add",
-                "row drag"
+                "Queue"
             ]
         },
-        "Phoenix": {
-            "lead": "zdrawku",
-            "ownership": [
-                "grid cell component",
-                "grid column group",
-                "grid column component",
-                "grid summary",
-                "grid crud",
-                "grid pagination",
-                "grid sorting",
-                "grid cell editing",
-                "linear progress",
-                "circular progress",
-                "dialog",
-                "slider",
-                "toggle",
-                "layout manager",
-                "carousel",
-                "calendar",
-                "date picker"
-            ]
-        },
-        "Grinders": {
-            "lead": "mpavlinov",
-            "ownership": [
-                "grid column pinning",
-                "grid groupby",
-                "grid component",
-                "grid hierarchical",
-                "virtual for",
-                "chip"
-            ]
-        },
-        "Samsara": {
-            "lead": "bkulov",
-            "ownership": [
-                "grid filtering",
-                "grid column resizing",
-                "grid column moving",
-                "button",
-                "button group",
-                "checkbox",
-                "switch",
-                "radio button",
-                "label",
-                "input",
-                "input group",
-                "badge",
-                "icon",
-                "mask",
-                "ripple",
-                "bottom navigation",
-                "tabs",
-                "avatar",
-                "time picker"
-            ]
-        },
-        "CodeX": {
-            "lead": "gedinakova",
-            "ownership": [
-                "grid column hiding",
-                "grid toolbar",
-                "global search",
-                "list view",
-                "navbar",
-                "card",
-                "snackbar",
-                "toast",
-                "grid exporting",
-                "row filtering",
-                "excel style filtering"
+        "bugsTriage": {
+            "name": "Bugs Triage",
+            "columns": [
+                "Queue"
             ]
         }
     },
