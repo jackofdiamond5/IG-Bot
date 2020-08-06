@@ -18,14 +18,16 @@ organization = get_orgname()
 
 
 async def add_to_projects(event_data, headers):
+    "add an issue to predefined Github projects"
     issue = event_data.get("issue")
-    issue_id = issue.get("node_id").strip("=")
+    issue_id = issue.get("node_id")
     issue_labels = issue.get("labels")
     master_backlog = await get_master_backlog(organization, headers)
     project_name = select_project(issue_labels)
+    target_project, target_project_id = None, None
     if project_name is not None:
         target_project = await get_project_data(project_name, organization, headers)
-    if target_project:
+    if target_project is not None:
         target_project_id = target_project.get("id")
     await add_issue_to_projects(
         issue_id,
@@ -36,7 +38,7 @@ async def add_to_projects(event_data, headers):
 
 async def add_labels(event_data, headers, labels_to_add, *args, **kwargs):
     "add labels to an Issue"
-    post_labels_url = event_data.get("issue", {}).get("labels_url", None)
+    post_labels_url = event_data.get("issue", {}).get("labels_url")
     response = requests.post(
         post_labels_url.replace(name_tmp, ""),
         json.dumps(labels_to_add),

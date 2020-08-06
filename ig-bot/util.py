@@ -16,14 +16,14 @@ async def get_api_data(uri, headers):
 async def update_installations(app_intallations):
     "get all app installations"
     response = await auth.find_all_installations()
-    res_body = json.loads(response.get("body", None))
+    res_body = json.loads(response.get("body"))
     await update_tokens(res_body, app_intallations)
 
 
 async def update_tokens(installations, app_intallations):
     "update the tokens for all installations"
     for installation in installations:
-        installation_id = installation.get("id", None)
+        installation_id = installation.get("id")
         app_intallations[installation_id] = await get_installation_info(installation_id)
     return app_intallations
 
@@ -66,8 +66,9 @@ def digest_body(body):
 
 
 def token_expired(target_instl_id, app_intallations):
+    "returns if the token for the specific installation has expired"
     # expires_at shows when the token will expire (UTC+1)
-    expires_at = app_intallations[target_instl_id].get("expires_at", None)
+    expires_at = app_intallations[target_instl_id].get("expires_at")
     # convert the date to local datetime and return if it has expired
     parsed = dp.parse(expires_at).astimezone().replace(tzinfo=None)
     return parsed <= datetime.now()
@@ -81,6 +82,7 @@ def set_headers(token, accept=None, bearer=False):
 
 
 def build_payload(schema, variables):
+    "build a graphql payload that is to be sent to Github"
     newLine = "\n"
     return (
         '{"query":'

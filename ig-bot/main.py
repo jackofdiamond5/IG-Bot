@@ -11,11 +11,8 @@ from gidgethub import ValidationFailure
 
 from static import graphql_endpoint
 from settings import load_env_variables
-
-
-import util
-import webhook_handlers as wh
-
+from webhook_handlers import opened_issue
+from util import token_expired, set_headers, get_installation_info, update_installations
 
 # collection to store all authenticated tokens
 # each token is associated with an installation
@@ -33,8 +30,8 @@ port = os.environ.get("PORT")
 # listen for events raised by the router
 @router.register("issues", action="opened")
 async def opened_issue_evt(event, token, *args, **kwargs):
-    headers = util.set_headers(token)
-    await wh.opened_issue(event, headers)
+    headers = set_headers(token)
+    await opened_issue(event, headers)
 
 
 # end region
@@ -43,7 +40,7 @@ async def opened_issue_evt(event, token, *args, **kwargs):
 async def main(request):
     body = await request.read()
     body_json = json.loads(body.decode())
-    target_instl_id = body_json.get("installation", {}).get("id", None)
+    target_instl_id = body_json.get("installation").get("id")
     try:
         # pass the app's webhook secret to sansio for payload validation and create an event
         secret = os.environ.get("GITHUB_WEBHOOK_SECRET")
@@ -56,18 +53,17 @@ async def main(request):
     if len(app_installations) == 0:
         # update all tokens if it is a first time start
         print("Initial start. Updating all tokens.")
-        await util.update_installations(app_installations)
-    elif target_instl_id not in app_installations or util.token_expired(
+        await update_installations(app_installations)
+    elif target_instl_id not in app_installations or token_expired(
         target_instl_id, app_installations
     ):
         # update this particular installation's token if it has expired or the installation is new
         print(f"Updating/Adding token for app with ID: {target_instl_id}.")
-        app_installations[target_instl_id] = await util.get_installation_info(
+        app_installations[target_instl_id] = await get_installation_info(
             target_instl_id
         )
     # get the installation's token
-    token = app_installations[target_instl_id].get("token", None)
-    print(token)
+    token = app_installations[target_instl_id].get("token")
     # dispatch an event that contains the payload
     await router.dispatch(event, token=token)
     return web.Response(status=200)

@@ -15,6 +15,7 @@ class ParallelScheduler(Scheduler):
         Scheduler.__init__(self)
 
     def run_continuously(self, interval=1):
+        "run the scheduler on a separate thread until 'stop_continuous_running' is 'true'"
         stop_continuous_running = threading.Event()
 
         class ScheduleThread(threading.Thread):

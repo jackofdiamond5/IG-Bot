@@ -59,7 +59,7 @@ async def auth_app():
 
 
 async def find_all_installations():
-    "find all installations for the authenticated app"
+    "find all installations for the authenticated application"
     gh_app = await auth_app()
     jwt = gh_app["jwt"]
     uri = "https://api.github.com/app/installations"
@@ -71,6 +71,7 @@ async def find_all_installations():
 
 
 async def get_single_installation(installation_id):
+    "returns a particular installation for the application"
     gh_app = await auth_app()
     jwt = gh_app["jwt"]
     uri = f"https://api.github.com/app/installations/{installation_id}"
