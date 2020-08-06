@@ -12,6 +12,7 @@ from gidgethub import ValidationFailure
 from static import graphql_endpoint
 from settings import load_env_variables
 from webhook_handlers import opened_issue
+from issues import try_add_issues_to_project
 from util import token_expired, set_headers, get_installation_info, update_installations
 
 # collection to store all authenticated tokens
@@ -52,7 +53,7 @@ async def main(request):
         return web.Response(status=401)
     if len(app_installations) == 0:
         # update all tokens if it is a first time start
-        print("Initial start. Updating all tokens.")
+        print("Updating all tokens.")
         await update_installations(app_installations)
     elif target_instl_id not in app_installations or token_expired(
         target_instl_id, app_installations
@@ -69,9 +70,27 @@ async def main(request):
     return web.Response(status=200)
 
 
+async def on_startup():
+    """issues that do not have a project will be added to Master Backlog
+    \nruns for any installation that the authorized app has access to"""
+    await update_installations(app_installations)
+    for installation in app_installations:
+        token = app_installations[installation].get("token")
+        headers = set_headers(token)
+        await try_add_issues_to_project(headers)
+
+
+def async_job_runner():
+    try:
+        asyncio.run(on_startup())
+    except:
+        print("Failed 'on_startup' script.")
+
+
 if __name__ == "__main__":
     app = web.Application()
     app.router.add_post("/event-handler", main)
     if port is not None:
         port = int(port)
+    async_job_runner()
     web.run_app(app, port=port)

@@ -54,4 +54,5 @@ async def get_project_data(project_name, login, headers):
     payload = build_payload(schema, variables)
     response = requests.post(graphql_endpoint, payload, headers=headers)
     response_json = json.loads(response.content.decode())
+    # returns a project object { name: string, id: string, columns:[{ name, id, url }] }
     return response_json.get("data").get("organization").get("projects").get("nodes")[0]

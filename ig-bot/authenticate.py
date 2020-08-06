@@ -85,7 +85,7 @@ async def find_org_installation(org, token):
     uri = f"https://api.github.com/orgs{org}/installation"
     headers = util.set_headers(jwt, accept_headers["machine_man_preview"], True)
     response = requests.get(uri, params=None, headers=headers)
-    return {"jwt": token, "status": response.reason, "body": response.content.dcode()}
+    return {"jwt": token, "status": response.reason, "body": response.content.decode()}
 
 
 async def auth_installation(installation_id):

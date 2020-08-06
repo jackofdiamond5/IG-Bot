@@ -26,6 +26,10 @@
             ]
         }
     },
+    "repositories": [
+      "MyAwesomeRepository",
+      "Another-Awesome-Repo"
+    ],
     "newIssueLabels": [
         "status: in-review"
     ],

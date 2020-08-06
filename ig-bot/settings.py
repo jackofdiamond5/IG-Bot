@@ -30,6 +30,11 @@ def read_project_columns(proj_name):
             return projects.get(p_type, {}).get("columns", [])
 
 
+def get_repositories():
+    config_json = read_config_json()
+    return config_json.get("repositories")
+
+
 def read_config_json():
     "returns loaded json of config.json"
     return json.loads(open("resources/config.json", "r").read())
