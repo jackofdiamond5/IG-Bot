@@ -67,7 +67,6 @@ async def get_issues_for_repo(login, repo_name, headers):
     variables = "{" + f'"login": "{login}"' + f', "name": "{repo_name}"' + "}"
     schema = open("Schemas/issues_for_repo.graphql", "r").read()
     payload = build_payload(schema, variables)
-    print(payload)
     return json.loads(
         requests.post(graphql_endpoint, payload, headers=headers).content.decode()
     )
