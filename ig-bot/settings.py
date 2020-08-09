@@ -37,4 +37,4 @@ def get_repositories():
 
 def read_config_json():
     "returns loaded json of config.json"
-    return json.loads(open("resources/config.json", "r").read())
+    return json.loads(open("Resources/config.json", "r").read())

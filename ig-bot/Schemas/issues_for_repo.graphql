@@ -1,14 +1,21 @@
 query GetIssuesForRepository($login: String!, $name: String!) {
   organization(login: $login) {
-    repository(name: $name) {
-      issues (last:20, states: OPEN) {
-        nodes {
-          id
-          projectCards {
-            nodes {
-              project {
-                name
+      repository(name: $name) {
+        issues (last:20, states: OPEN) {
+          nodes {
+            id
+            projectCards {
+              nodes {
+                project {
+                  name
+                }
               }
+            }
+            labels(first: 10) {
+              nodes {
+                id
+                name
+                url
             }
           }
         }

@@ -73,6 +73,7 @@ async def main(request):
 async def on_startup():
     """issues that do not have a project will be added to Master Backlog
     \nruns for any installation that the authorized app has access to"""
+    print("Firing up.")
     await update_installations(app_installations)
     for installation in app_installations:
         token = app_installations[installation].get("token")
@@ -82,7 +83,8 @@ async def on_startup():
 
 def async_job_runner():
     try:
-        asyncio.run(on_startup())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(on_startup())
     except:
         print("Failed 'on_startup' script.")
 

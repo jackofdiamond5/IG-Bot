@@ -10,11 +10,7 @@ organization = get_orgname()
 
 async def add_issue_to_projects(issue_id, project_ids, headers):
     "send a graphql mutation to Github to move an issue to specific projects"
-    variables = (
-        "{"
-        + f'"issue_id": "{issue_id}", "project_ids": {json.dumps(project_ids)}'
-        + "}"
-    )
+    variables = json.dumps({"issue_id": issue_id, "project_ids": project_ids})
     schema = open("Schemas/add_to_project.graphql", "r").read()
     payload = build_payload(schema, variables)
     response = requests.post(graphql_endpoint, payload, headers=headers)
@@ -49,10 +45,23 @@ def select_project(issue_labels):
 
 async def get_project_data(project_name, login, headers):
     "returns a project dict in the format specified in project_data.graphql"
-    variables = "{" + f'"projectName": "{project_name}", "login": "{login}"' + "}"
+    variables = json.dumps({"projectName": project_name, "login": login})
     schema = open("Schemas/project_data.graphql", "r").read()
     payload = build_payload(schema, variables)
     response = requests.post(graphql_endpoint, payload, headers=headers)
     response_json = json.loads(response.content.decode())
+    nodes = response_json.get("data").get("organization").get("projects").get("nodes")
     # returns a project object { name: string, id: string, columns:[{ name, id, url }] }
-    return response_json.get("data").get("organization").get("projects").get("nodes")[0]
+    return nodes[0] if len(nodes) > 0 else None
+
+
+async def get_projects_data(projects_names, login, headers):
+    "returns a dict with all of the projects names, ids and columns"
+    projects_data = []
+    for project_name in projects_names:
+        if project_name is None:
+            continue
+        result = await get_project_data(project_name, login, headers)
+        if result is not None:
+            projects_data.append(result)
+    return projects_data

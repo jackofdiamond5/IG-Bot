@@ -84,10 +84,9 @@ def set_headers(token, accept=None, bearer=False):
 def build_payload(schema, variables):
     "build a graphql payload that is to be sent to Github"
     newLine = "\n"
-    return (
-        '{"query":'
-        + f'"{schema.replace(newLine, "")}",'
-        + '"variables":'
-        + variables.replace(newLine, "")
-        + "}"
+    return json.dumps(
+        {
+            "query": schema.replace(newLine, ""),
+            "variables": variables.replace(newLine, ""),
+        }
     )

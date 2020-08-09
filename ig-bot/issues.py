@@ -3,6 +3,7 @@ import json
 import requests
 
 from settings import get_orgname, get_repositories
+from labels import add_labels_to_labelable
 from static import graphql_endpoint
 from util import get_api_data, clean, build_payload
 from projects import (
@@ -10,6 +11,7 @@ from projects import (
     select_project,
     add_issue_to_projects,
     get_project_data,
+    get_projects_data
 )
 
 
@@ -39,7 +41,7 @@ async def add_to_projects(event_data, headers):
 
 async def add_labels(event_data, headers, labels_to_add, *args, **kwargs):
     "add labels to an Issue"
-    post_labels_url = event_data.get("issue", {}).get("labels_url")
+    post_labels_url = event_data.get("issue").get("labels_url")
     response = requests.post(
         post_labels_url.replace(name_tmp, ""),
         json.dumps(labels_to_add),
@@ -64,7 +66,7 @@ async def match_label(labels_url, control_name, headers, page=1):
 
 
 async def get_issues_for_repo(login, repo_name, headers):
-    variables = "{" + f'"login": "{login}"' + f', "name": "{repo_name}"' + "}"
+    variables = json.dumps({"login": login, "name": repo_name})
     schema = open("Schemas/issues_for_repo.graphql", "r").read()
     payload = build_payload(schema, variables)
     return json.loads(
@@ -72,27 +74,75 @@ async def get_issues_for_repo(login, repo_name, headers):
     )
 
 
-async def find_issues_without_project(login, headers):
-    issues_without_project = []
+async def get_issues_for_organization(login, headers):
+    repositories = []
     for repo_name in get_repositories():
-        response = await get_issues_for_repo(login, repo_name, headers)
-        issues = (
-            response.get("data")
+        repository = await get_issues_for_repo(login, repo_name, headers)
+        repositories.append(
+            repository.get("data")
             .get("organization")
             .get("repository")
             .get("issues")
             .get("nodes")
         )
+    return repositories
+
+
+def extract_issues_labels(repositories, login, headers):
+    extracted = {}
+    for issues in repositories:
         for issue in issues:
-            if len(issue.get("projectCards").get("nodes")) == 0:
-                issues_without_project.append(issue.get("id"))
-    return issues_without_project
+            issue_id = issue.get("id")
+            if not issue_in_master_backlog(issue):
+                extracted[issue_id] = ["Master Backlog"]
+            if not issue_in_features_or_bugs_triage(issue):
+                issue_labels = issue.get("labels").get("nodes")
+                if issue_id not in extracted:
+                    extracted[issue_id] = [select_project(issue_labels)]
+                else:
+                    extracted.get(issue_id).append(select_project(issue_labels))
+    return extracted
+
+
+def issue_in_master_backlog(issue):
+    project_cards = issue.get("projectCards").get("nodes")
+    for card in project_cards:
+        if card.get("project").get("name") == "Master Backlog":
+            return True
+    return False
+
+
+def issue_in_features_or_bugs_triage(issue):
+    project_cards = issue.get("projectCards").get("nodes")
+    for card in project_cards:
+        card_name = card.get("project").get("name").strip()
+        if card_name == "Features Triage" or card_name == "Bugs Triage":
+            return True
+    return False
 
 
 async def try_add_issues_to_project(headers):
-    login = get_orgname()
-    master_backlog = await get_master_backlog(login, headers)
-    issues_without_project = await find_issues_without_project(login, headers)
-    if len(issues_without_project) > 0:
-        for issue_id in issues_without_project:
-            await add_issue_to_projects(issue_id, [master_backlog.get("id")], headers)
+    master_backlog = await get_master_backlog(organization, headers)
+    repositories = await get_issues_for_organization(organization, headers)
+    extracted_issues = extract_issues_labels(repositories, organization, headers)
+
+    if len(extracted_issues) > 0:
+        for issue_id in extracted_issues:  # TODO write logic to add based on labels
+            if extracted_issues[issue_id] is None:
+                continue
+            project_names = extracted_issues[issue_id]
+            selected_projects = await get_projects_data(project_names, organization, headers)
+            for selected_project in selected_projects:
+                to_master_backlog = (
+                    master_backlog.get("id")
+                    if "Master Backlog" in extracted_issues[issue_id]
+                    else None
+                )
+                await add_issue_to_projects(
+                    issue_id,
+                    list(
+                        filter(None.__ne__, [to_master_backlog, selected_project.get("id")])
+                    ),
+                    headers,
+                )
+            # await add_labels_to_labelable([], issue_id, headers)
