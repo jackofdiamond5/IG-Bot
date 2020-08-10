@@ -102,8 +102,23 @@ def extract_issues_projects(repositories, login, headers):
                 issue
             ):
                 continue
-            extracted[issue_id] = ["Master Backlog", select_project(issue_labels)]
+            issue_projects = get_projects_for_issue(issue)
+            project_names = [
+                "Master Backlog",
+                select_project(issue_labels),
+            ]
+            if issue_projects is not None:
+                project_names = list(set(project_names + issue_projects))
+            extracted[issue_id] = project_names
     return extracted
+
+
+def get_projects_for_issue(issue):
+    project_cards = issue.get("projectCards").get("nodes")
+    names = []
+    for card in project_cards:
+        names.append(card.get("project").get("name"))
+    return names
 
 
 def issue_in_master_backlog(issue):
@@ -131,26 +146,20 @@ async def try_add_issues_to_project(headers):
     if len(extracted_issues) <= 0:
         return
     for issue_id in extracted_issues:
-        print(issue_id)
-        if extracted_issues[issue_id] is None:
-            continue
         project_names = extracted_issues[issue_id]
+        if project_names is None:
+            continue
         selected_projects = await get_projects_data(
             project_names, organization, headers
         )
-        for selected_project in selected_projects:
-            to_master_backlog = (
-                master_backlog.get("id")
-                if "Master Backlog" in extracted_issues[issue_id]
-                else None
-            )
-            await add_issue_to_projects(
-                issue_id,
-                list(
-                    filter(None.__ne__, [to_master_backlog, selected_project.get("id")])
-                ),
-                headers,
-            )
+        master_backlog_id = (
+            master_backlog.get("id")
+            if "Master Backlog" in extracted_issues[issue_id]
+            else None
+        )
+        ids = [sp.get("id") for sp in selected_projects]
+        ids.append(master_backlog_id)
+        await add_issue_to_projects(issue_id, list(filter(None.__ne__, ids)), headers)
 
 
 async def try_add_labels_to_issues(label_name, headers):

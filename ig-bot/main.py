@@ -86,8 +86,9 @@ def async_job_runner():
     try:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(on_startup())
-    except:
+    except Exception as inst:
         print("Failed 'on_startup' script.")
+        print(inst)
 
 
 if __name__ == "__main__":
