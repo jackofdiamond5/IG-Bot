@@ -1,0 +1,11 @@
+mutation AddLabelsToLabelable($label_ids: [ID!], $labelable_id: ID) {
+    addLabelsToLabelable(input: {labelIds: $label_ids, labelableId: $labelable_id}) {
+        labelable {
+            labels(first: 10) {
+                nodes {
+                    id
+                }
+            }
+        }
+    }
+}

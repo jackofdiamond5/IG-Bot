@@ -12,7 +12,7 @@ from gidgethub import ValidationFailure
 from static import graphql_endpoint
 from settings import load_env_variables
 from webhook_handlers import opened_issue
-from issues import try_add_issues_to_project
+from issues import try_add_issues_to_project, try_add_labels_to_issues
 from util import token_expired, set_headers, get_installation_info, update_installations
 
 # collection to store all authenticated tokens
@@ -79,6 +79,7 @@ async def on_startup():
         token = app_installations[installation].get("token")
         headers = set_headers(token)
         await try_add_issues_to_project(headers)
+        await try_add_labels_to_issues("status: in-review", headers)
 
 
 def async_job_runner():
