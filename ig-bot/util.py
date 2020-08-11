@@ -13,19 +13,21 @@ async def get_api_data(uri, headers):
     return json.loads(response.content.decode())
 
 
-async def update_installations(app_intallations):
+async def update_installations(app_installations):
     "get all app installations"
     response = await auth.find_all_installations()
     res_body = json.loads(response.get("body"))
-    await update_tokens(res_body, app_intallations)
+    await update_tokens(res_body, app_installations)
 
 
-async def update_tokens(installations, app_intallations):
+async def update_tokens(installations, app_installations):
     "update the tokens for all installations"
     for installation in installations:
         installation_id = installation.get("id")
-        app_intallations[installation_id] = await get_installation_info(installation_id)
-    return app_intallations
+        app_installations[installation_id] = await get_installation_info(
+            installation_id
+        )
+    return app_installations
 
 
 async def get_installation_info(installation_id):

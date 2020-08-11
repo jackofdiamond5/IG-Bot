@@ -32,9 +32,9 @@ async def get_master_backlog(login, headers):
 def select_project(issue_labels):
     "selects a project between 'Bugs Triage' and 'Features Triage'"
     names = [
-        issue
-        for issue in issue_labels
-        if issue.get("name") == "bug" or issue.get("name") == "feature-request"
+        label
+        for label in issue_labels
+        if label.get("name") == "bug" or label.get("name") == "feature-request"
     ]
     project = {"bug": "Bugs Triage", "feature-request": "Features Triage"}
     label_name = names[0].get("name") if len(names) > 0 else None

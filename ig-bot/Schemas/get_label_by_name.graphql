@@ -1,6 +1,6 @@
 query GetLabelByName($login: String!, $label_name: String!) {
     organization(login: $login) {
-        repositories(first: 50) {
+        repositories(first: 30) {
             nodes {
                 name
                 label(name: $label_name) {

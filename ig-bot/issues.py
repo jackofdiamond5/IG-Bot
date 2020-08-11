@@ -187,5 +187,5 @@ async def try_add_labels_to_issue(repo_name, issue, labels_data, headers):
         repositories[i].get("label").get("id")
         for i in range(len(repositories))
         if repositories[i].get("name").strip() == repo_name
-    ][0]
-    await add_labels_to_labelable([label_id], issue.get("id"), headers)
+    ]
+    await add_labels_to_labelable(label_id, issue.get("id"), headers)
