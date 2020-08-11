@@ -4,7 +4,7 @@ import requests
 
 from settings import get_orgname, get_repositories
 from labels import add_labels_to_labelable, get_label_by_name
-from static import graphql_endpoint
+from static import graphql_endpoint, labels_to_skip
 from util import get_api_data, clean, build_payload
 from projects import (
     get_master_backlog,
@@ -170,12 +170,8 @@ async def try_add_labels_to_issues(label_name, headers):
         issues = repositories[repo_name]
         for issue in issues:
             issue_labels = issue.get("labels").get("nodes")
-            labels_to_skip = [
-                label.get("name").strip()
-                for label in issue_labels
-                if label.get("name").strip() == label_name
-            ]
-            if len(labels_to_skip) == 0:
+            labels_in_issue = [label.get("name").strip() for label in issue_labels]
+            if not any(name in labels_in_issue for name in labels_to_skip):
                 await try_add_labels_to_issue(repo_name, issue, all_labels, headers)
 
 
