@@ -15,6 +15,8 @@ from webhook_handlers import opened_issue
 from issues import try_add_issues_to_project, try_add_labels_to_issues
 from util import token_expired, set_headers, get_installation_info, update_installations
 
+# os.chdir("/home/igadmin/ig-bot")
+
 # collection to store all authenticated tokens
 # each token is associated with an installation
 # { <installation_id>: { token: "", expires_at: "" } }

@@ -67,10 +67,10 @@ def digest_body(body):
     return selected_labels
 
 
-def token_expired(target_instl_id, app_intallations):
+def token_expired(target_instl_id, app_installations):
     "returns if the token for the specific installation has expired"
     # expires_at shows when the token will expire (UTC+1)
-    expires_at = app_intallations[target_instl_id].get("expires_at")
+    expires_at = app_installations[target_instl_id].get("expires_at")
     # convert the date to local datetime and return if it has expired
     parsed = dp.parse(expires_at).astimezone().replace(tzinfo=None)
     return parsed <= datetime.now()
