@@ -25,8 +25,7 @@ async def update_tokens(installations, app_installations):
     for installation in installations:
         installation_id = installation.get("id")
         app_installations[installation_id] = await get_installation_info(
-            installation_id
-        )
+            installation_id)
     return app_installations
 
 
@@ -42,7 +41,10 @@ async def list_repositories(headers):
     uri = "https://api.github.com/installation/repositories"
     response = requests.get(uri, data=None, headers=headers)
     # status is OK if the request passed authentication
-    return {"status": response.reason, "body": json.loads(response.content.decode())}
+    return {
+        "status": response.reason,
+        "body": json.loads(response.content.decode())
+    }
 
 
 def clean(text):
@@ -86,9 +88,7 @@ def set_headers(token, accept=None, bearer=False):
 def build_payload(schema, variables):
     "build a graphql payload that is to be sent to Github"
     newLine = "\n"
-    return json.dumps(
-        {
-            "query": schema.replace(newLine, ""),
-            "variables": variables.replace(newLine, ""),
-        }
-    )
+    return json.dumps({
+        "query": schema.replace(newLine, ""),
+        "variables": variables.replace(newLine, ""),
+    })

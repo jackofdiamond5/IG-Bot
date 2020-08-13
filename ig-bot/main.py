@@ -47,9 +47,9 @@ async def main(request):
     try:
         # pass the app's webhook secret to sansio for payload validation and create an event
         secret = os.environ.get("GITHUB_WEBHOOK_SECRET")
-        event = sansio.Event.from_http(
-            headers=request.headers, body=body, secret=secret
-        )
+        event = sansio.Event.from_http(headers=request.headers,
+                                       body=body,
+                                       secret=secret)
     except ValidationFailure:
         # return Unauthorized if the request was not signed by GitHub
         return web.Response(status=401)
@@ -58,13 +58,11 @@ async def main(request):
         print("Updating all tokens.")
         await update_installations(app_installations)
     elif target_instl_id not in app_installations or token_expired(
-        target_instl_id, app_installations
-    ):
+            target_instl_id, app_installations):
         # update this particular installation's token if it has expired or the installation is new
         print(f"Updating/Adding token for app with ID: {target_instl_id}.")
         app_installations[target_instl_id] = await get_installation_info(
-            target_instl_id
-        )
+            target_instl_id)
     # get the installation's token
     token = app_installations[target_instl_id].get("token")
     # dispatch an event that contains the payload
@@ -85,13 +83,13 @@ async def on_startup():
 
 
 def async_job_runner():
-    try:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(on_startup())
-    except Exception as inst:
-        print("Failed 'on_startup' script.")
-        print(inst)
+    # try:
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(on_startup())
 
+# except Exception as inst:
+#     print("Failed 'on_startup' script.")
+#     print(inst)
 
 if __name__ == "__main__":
     app = web.Application()

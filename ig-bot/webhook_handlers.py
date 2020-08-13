@@ -1,9 +1,9 @@
 import json
 from issues import add_labels, add_to_projects
 
+
 # handler functions for webhook events
 # payload = event.data
-
 
 # region Issues:
 async def opened_issue(event, headers):

@@ -24,6 +24,7 @@ class ParallelScheduler(Scheduler):
                 while not stop_continuous_running.is_set():
                     self.run_pending()
                     time.sleep(interval)
+
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         return stop_continuous_running
@@ -34,10 +35,8 @@ class ParallelScheduler(Scheduler):
 # async def job():
 #     NotImplemented
 
-
 # def job_runner():
 #     asyncio.run(job())
-
 
 # scheduler = ParallelScheduler()
 # scheduler.every().friday.at("22:00").do(job_runner)

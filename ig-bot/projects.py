@@ -20,7 +20,8 @@ async def add_issue_to_projects(issue_id, project_ids, headers):
 async def get_project_columns(target_project, headers):
     "get all columns of a specific project"
     response = await get_project_data(target_project, organization, headers)
-    projects = response.get("data").get("organization").get("projects").get("nodes")
+    projects = response.get("data").get("organization").get("projects").get(
+        "nodes")
     return projects[0].get("columns").get("nodes")
 
 
@@ -29,18 +30,19 @@ async def get_master_backlog(login, headers):
     return await get_project_data("Master Backlog", login, headers)
 
 
-def select_project(issue_labels):
+async def select_project(issue_labels, login, headers):
     "selects a project between 'Bugs Triage' and 'Features Triage'"
     names = [
-        label
-        for label in issue_labels
+        label for label in issue_labels
         if label.get("name") == "bug" or label.get("name") == "feature-request"
     ]
-    project = {"bug": "Bugs Triage", "feature-request": "Features Triage"}
+    projects = {"bug": "Bugs Triage", "feature-request": "Features Triage"}
     label_name = names[0].get("name") if len(names) > 0 else None
-    if label_name is None or label_name not in project.keys():
+    if label_name is None or label_name not in projects.keys():
         return None
-    return project[label_name]
+    project = projects[label_name]
+    project_data = await get_project_data(project, login, headers)
+    return project_data.get("id")
 
 
 async def get_project_data(project_name, login, headers):
@@ -50,7 +52,8 @@ async def get_project_data(project_name, login, headers):
     payload = build_payload(schema, variables)
     response = requests.post(graphql_endpoint, payload, headers=headers)
     response_json = json.loads(response.content.decode())
-    nodes = response_json.get("data").get("organization").get("projects").get("nodes")
+    nodes = response_json.get("data").get("organization").get("projects").get(
+        "nodes")
     # returns a project object { name: string, id: string, columns:[{ name, id, url }] }
     return nodes[0] if len(nodes) > 0 else None
 
