@@ -1,0 +1,13 @@
+query GetLabelsForIssue($login: String!, $repo_name: String!, $issue_number: Int!) {
+  organization(login: $login) {
+    repository(name: $repo_name) {
+      issue(number: $issue_number) {
+      	labels(first: 10) {
+          nodes {
+            name
+          }
+        }  
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@ from gidgethub import ValidationFailure
 
 from static import graphql_endpoint
 from settings import load_env_variables
-from webhook_handlers import opened_issue
+from webhook_handlers import opened_issue, labelled_issue
 from issues import try_add_issues_to_project, try_add_labels_to_issues
 from util import token_expired, set_headers, get_installation_info, update_installations
 
@@ -35,6 +35,12 @@ port = os.environ.get("PORT")
 async def opened_issue_evt(event, token, *args, **kwargs):
     headers = set_headers(token)
     await opened_issue(event, headers)
+
+
+@router.register("issues", action="labeled")
+async def laebelled_issue_evt(event, token, *args, **kwargs):
+    headers = set_headers(token)
+    await labelled_issue(event, headers)
 
 
 # end region
@@ -83,13 +89,13 @@ async def on_startup():
 
 
 def async_job_runner():
-    # try:
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(on_startup())
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(on_startup())
+    except Exception as inst:
+        print("Failed 'on_startup' script.")
+        print(inst)
 
-# except Exception as inst:
-#     print("Failed 'on_startup' script.")
-#     print(inst)
 
 if __name__ == "__main__":
     app = web.Application()

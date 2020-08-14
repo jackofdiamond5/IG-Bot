@@ -92,3 +92,7 @@ def build_payload(schema, variables):
         "query": schema.replace(newLine, ""),
         "variables": variables.replace(newLine, ""),
     })
+
+
+def switch_label(value):
+    return {"bug": "Bugs Triage", "feature-request": "Features Triage"}[value]

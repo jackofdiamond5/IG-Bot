@@ -7,3 +7,4 @@ accept_headers = {
 
 graphql_endpoint = "https://api.github.com/graphql"
 labels_to_skip = ["status: in-review", "status: in-development", "status: resolved"]
+target_labels = ["bug", "feature-request"]

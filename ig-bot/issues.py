@@ -45,7 +45,8 @@ async def add_to_projects(event_data, headers):
         response.get("data").get("organization").get("repository").get(
             "issue"))
     master_backlog = await get_master_backlog(organization, headers)
-    selected_project_id = await select_project(issue_labels, organization, headers)
+    selected_project_id = await select_project(issue_labels, organization,
+                                               headers)
     target_projects_ids.extend([master_backlog.get("id"), selected_project_id])
     await add_issue_to_projects(
         issue_id,
@@ -78,6 +79,21 @@ async def match_label(labels_url, control_name, headers, page=1):
             match = await match_label(url, control_name, headers, page + 1)
             return match
     return None
+
+
+async def get_labels_for_issue(repo_name, issue_number, headers):
+    schema = open("Schemas/get_labels_for_issue.graphql", "r").read()
+    variables = json.dumps({
+        "login": organization,
+        "repo_name": repo_name,
+        "issue_number": issue_number
+    })
+    payload = build_payload(schema, variables)
+    response = json.loads(
+        requests.post(graphql_endpoint, payload,
+                      headers=headers).content.decode())
+    return response.get("data").get("organization").get("repository").get("issue").get(
+        "labels").get("nodes")
 
 
 async def get_issues_for_repo(login, repo_name, headers):

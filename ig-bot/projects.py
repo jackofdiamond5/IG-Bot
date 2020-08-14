@@ -1,8 +1,8 @@
 import json
 import requests
 
-from util import build_payload
-from static import graphql_endpoint
+from util import build_payload, switch_label
+from static import graphql_endpoint, target_labels
 from settings import get_orgname
 
 organization = get_orgname()
@@ -30,17 +30,20 @@ async def get_master_backlog(login, headers):
     return await get_project_data("Master Backlog", login, headers)
 
 
-async def select_project(issue_labels, login, headers):
+async def select_project(issue_labels, login, headers, *args):
     "selects a project between 'Bugs Triage' and 'Features Triage'"
-    names = [
-        label for label in issue_labels
-        if label.get("name") == "bug" or label.get("name") == "feature-request"
+    labels = [
+        label for label in issue_labels if label.get("name") in target_labels
     ]
-    projects = {"bug": "Bugs Triage", "feature-request": "Features Triage"}
-    label_name = names[0].get("name") if len(names) > 0 else None
-    if label_name is None or label_name not in projects.keys():
+    if len(args) > 0:
+        label_name = [
+            label.get("name") for label in labels if label.get("name") in args
+        ][0]
+    else:
+        label_name = labels[0].get("name") if len(labels) > 0 else None
+    if label_name is None:
         return None
-    project = projects[label_name]
+    project = switch_label(label_name)
     project_data = await get_project_data(project, login, headers)
     return project_data.get("id")
 
